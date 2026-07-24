@@ -28,6 +28,16 @@ def listar_platillos(
     return PlatilloService.obtener_menu_filtrado(db, categoria, busqueda)
 
 
+@router.get("/admin/todos", response_model=List[PlatilloResponse])
+def listar_catalogo_completo(
+    db: Session = Depends(get_db),
+    _admin: UsuarioModel = Depends(get_current_admin_user),
+):
+    """Lista el catalogo completo, incluidos los platillos agotados. Requiere administrador,
+    ya que el panel de administracion necesita poder desmarcar un platillo como agotado."""
+    return PlatilloService.obtener_catalogo_completo(db)
+
+
 @router.post("/", response_model=PlatilloResponse, status_code=status.HTTP_201_CREATED)
 def crear_platillo(
     datos: PlatilloCreate,

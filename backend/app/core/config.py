@@ -18,8 +18,6 @@ class Settings(BaseSettings):
     SEED_DATA: bool = True
     SEED_ADMIN_USERNAME: str = "admin"
     SEED_ADMIN_PASSWORD: str = "admin123"
-    SEED_CLIENTE_USERNAME: str = "cliente"
-    SEED_CLIENTE_PASSWORD: str = "cliente123"
 
     class Config:
         env_file = ".env"

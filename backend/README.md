@@ -71,9 +71,11 @@ backend/
 3. **Login de administrador (JWT)**: los endpoints de escritura del catalogo (crear platillo, cambiar
    disponibilidad, cambiar precio) ahora requieren un token valido de administrador. Los endpoints de
    consulta del menu y de gestion de mesa siguen siendo publicos, ya que los usa el cliente sin iniciar sesion.
-4. **Datos de prueba automaticos**: al levantar el servidor se siembran platillos de ejemplo, un usuario
-   administrador y un usuario cliente (sin permisos de administrador) si las tablas estan vacias, para
-   poder probar la API de inmediato con ambos roles.
+4. **Datos de prueba automaticos**: al levantar el servidor se siembran platillos de ejemplo y un usuario
+   administrador inicial si las tablas estan vacias, para poder probar la API de inmediato. El sistema no
+   maneja cuentas de cliente: los clientes usan la carta y su mesa sin iniciar sesion.
+5. **Registro de personal**: `POST /api/auth/registrar` permite crear nuevas cuentas de administracion
+   (username + password) sin depender solo del usuario sembrado por el seed.
 
 ---
 
@@ -121,12 +123,11 @@ ACCESS_TOKEN_EXPIRE_MINUTES=60
 SEED_DATA=true
 SEED_ADMIN_USERNAME="admin"
 SEED_ADMIN_PASSWORD="admin123"
-SEED_CLIENTE_USERNAME="cliente"
-SEED_CLIENTE_PASSWORD="cliente123"
 ```
 
-> **Importante:** cambia `SECRET_KEY` y las credenciales de `SEED_ADMIN_*` / `SEED_CLIENTE_*` antes de
-> desplegar a un entorno real. `SEED_DATA=false` desactiva por completo la siembra de datos de prueba.
+> **Importante:** cambia `SECRET_KEY` y las credenciales de `SEED_ADMIN_*` antes de desplegar a un
+> entorno real. `SEED_DATA=false` desactiva por completo la siembra de datos de prueba. El sistema no
+> tiene cuentas de cliente: el resto del personal se registra con `POST /api/auth/registrar`.
 
 ---
 
@@ -144,19 +145,22 @@ idempotente: se revisa en cada arranque, pero nunca duplica datos si ya existen.
 
 ---
 
-## Autenticacion (login)
+## Autenticacion (login y registro)
 
-1. Inicia sesion en `POST /api/auth/login` enviando `username` y `password` como formulario
-   (`application/x-www-form-urlencoded`, estandar OAuth2 password flow).
-2. Usa las credenciales de prueba creadas por el seed (o las que definiste en `.env`):
-   - Administrador: `admin` / `admin123`
-   - Cliente (sin permisos de administrador): `cliente` / `cliente123`
-3. La respuesta entrega un `access_token` tipo `bearer`. Envialo en las peticiones protegidas como:
+1. Crea una cuenta de personal en `POST /api/auth/registrar` con `username` y `password` (JSON), o usa
+   directamente la cuenta admin creada por el seed. El registro devuelve el `access_token` de una vez.
+2. Para iniciar sesion con una cuenta existente, usa `POST /api/auth/login` enviando `username` y
+   `password` como formulario (`application/x-www-form-urlencoded`, estandar OAuth2 password flow).
+3. Credenciales de prueba creadas por el seed: `admin` / `admin123` (o las que definiste en `.env`).
+4. La respuesta entrega un `access_token` tipo `bearer`. Envialo en las peticiones protegidas como:
    `Authorization: Bearer <token>`.
-4. En Swagger UI puedes autenticarte con el boton **Authorize** usando esas mismas credenciales.
+5. En Swagger UI puedes autenticarte con el boton **Authorize** usando esas mismas credenciales.
 
-Endpoints protegidos (requieren token de administrador): crear platillo, cambiar disponibilidad y
-cambiar precio. La consulta del menu y toda la gestion de mesa (`/api/mesa/...`) permanecen publicas.
+Endpoints protegidos (requieren token de administrador): crear platillo, cambiar disponibilidad,
+cambiar precio y listar el catalogo completo (`GET /api/platillos/admin/todos`, incluye los agotados
+para que el panel de administracion pueda desmarcarlos). La consulta publica del menu
+(`GET /api/platillos/`) y toda la gestion de mesa (`/api/mesa/...`) permanecen publicas: el sistema no
+tiene cuentas de cliente, asi que ningun cliente inicia sesion.
 
 ---
 

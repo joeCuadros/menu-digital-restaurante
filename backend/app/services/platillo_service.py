@@ -23,6 +23,13 @@ class PlatilloService:
         return query.all()
 
     @staticmethod
+    def obtener_catalogo_completo(db: Session) -> List[PlatilloModel]:
+        """Lista TODOS los platillos, incluidos los agotados. Uso exclusivo de administracion,
+        ya que la carta publica (obtener_menu_filtrado) solo muestra los disponibles."""
+        return db.query(PlatilloModel).order_by(PlatilloModel.categoria, PlatilloModel.nombre).all()
+
+
+    @staticmethod
     def crear_platillo(db: Session, datos: PlatilloCreate) -> PlatilloModel:
         nuevo_plato = PlatilloModel(**datos.model_dump())
         db.add(nuevo_plato)

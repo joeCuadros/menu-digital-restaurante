@@ -4,9 +4,10 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
-from app.core.security import create_access_token, decode_access_token, verify_password
+from app.core.security import create_access_token, decode_access_token, hash_password, verify_password
 from app.database.session import get_db
 from app.models.usuario import UsuarioModel
+from app.schemas.usuario import UsuarioCreate
 
 # apunta al endpoint de login para que Swagger UI muestre el boton "Authorize"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
@@ -26,6 +27,27 @@ class AuthService:
         if not verify_password(password, usuario.hashed_password):
             return None
         return usuario
+
+    @staticmethod
+    def registrar_usuario(db: Session, datos: UsuarioCreate) -> UsuarioModel:
+        """Crea una nueva cuenta de personal administrativo. El sistema no maneja
+        cuentas de cliente: solo el personal del restaurante inicia sesion."""
+        if AuthService.obtener_usuario_por_username(db, datos.username):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Ese nombre de usuario ya esta en uso.",
+            )
+
+        nuevo_usuario = UsuarioModel(
+            username=datos.username,
+            hashed_password=hash_password(datos.password),
+            es_admin=True,
+            activo=True,
+        )
+        db.add(nuevo_usuario)
+        db.commit()
+        db.refresh(nuevo_usuario)
+        return nuevo_usuario
 
     @staticmethod
     def generar_token_para_usuario(usuario: UsuarioModel) -> str:

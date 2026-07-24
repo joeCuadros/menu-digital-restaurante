@@ -53,10 +53,14 @@ PLATILLOS_DE_PRUEBA = [
 
 def seed_initial_data(db: Session) -> None:
     """
-    Inserta datos de prueba (platillos, un usuario admin y un usuario cliente)
-    para facilitar las pruebas locales. Se ejecuta en cada arranque del
-    servidor, pero es idempotente: solo escribe si la tabla correspondiente
-    esta vacia, por lo que nunca duplica datos ni sobreescribe informacion real.
+    Inserta datos de prueba (platillos y un usuario admin inicial) para
+    facilitar las pruebas locales. Se ejecuta en cada arranque del servidor,
+    pero es idempotente: solo escribe si la tabla correspondiente esta vacia,
+    por lo que nunca duplica datos ni sobreescribe informacion real.
+
+    No se siembra ningun usuario "cliente": los clientes del restaurante
+    nunca inician sesion, solo el personal administrativo lo hace (y puede
+    registrar nuevas cuentas de administrador desde /api/auth/registrar).
     """
     if not settings.SEED_DATA:
         return
@@ -72,11 +76,5 @@ def seed_initial_data(db: Session) -> None:
             es_admin=True,
             activo=True,
         )
-        cliente = UsuarioModel(
-            username=settings.SEED_CLIENTE_USERNAME,
-            hashed_password=hash_password(settings.SEED_CLIENTE_PASSWORD),
-            es_admin=False,
-            activo=True,
-        )
-        db.add_all([admin, cliente])
+        db.add(admin)
         db.commit()
