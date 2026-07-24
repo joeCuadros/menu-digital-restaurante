@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: 'Fraunces', serif;
+  }
+
+  :focus-visible {
+    outline: 2px solid #E3A008;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Etiqueta tipo "sello" para el estado agotado, ligeramente rotada */
+  .stamp-agotado {
+    transform: rotate(-6deg);
+  }
+}
