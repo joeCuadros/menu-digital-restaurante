@@ -1,17 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, ShoppingBag } from 'lucide-react'
+import { Minus, Plus, Search, ShoppingBag } from 'lucide-react'
 import toast from 'react-hot-toast'
 import CategoriaFilter from '../components/CategoriaFilter.jsx'
 import PlatilloCard from '../components/PlatilloCard.jsx'
 import Loading from '../components/Loading.jsx'
 import { listarPlatillos } from '../services/api.js'
 import { useMesa } from '../hooks/useMesa.js'
-
-const MESA_ACTIVA_KEY = 'menu_digital_mesa_activa'
+import { useMesaActiva } from '../hooks/useMesaActiva.jsx'
 
 export default function Menu() {
-  const [idMesa, setIdMesa] = useState(() => localStorage.getItem(MESA_ACTIVA_KEY) || '1')
+  const { idMesa, setIdMesa } = useMesaActiva()
   const [platillos, setPlatillos] = useState([])
   const [categoria, setCategoria] = useState('Todas')
   const [busqueda, setBusqueda] = useState('')
@@ -19,9 +18,10 @@ export default function Menu() {
 
   const { mesa, cambiarCantidad } = useMesa(idMesa)
 
-  useEffect(() => {
-    localStorage.setItem(MESA_ACTIVA_KEY, idMesa)
-  }, [idMesa])
+  function cambiarMesaEnUno(delta) {
+    const siguiente = Math.max(1, Number(idMesa) + delta)
+    setIdMesa(String(siguiente))
+  }
 
   useEffect(() => {
     let activo = true
@@ -60,13 +60,32 @@ export default function Menu() {
       <div className="flex flex-col gap-3 rounded-2xl border border-stone bg-stone-light p-4 sm:flex-row sm:items-center sm:justify-between">
         <label className="flex items-center gap-2 text-sm font-medium text-ink/70">
           Numero de mesa
-          <input
-            type="number"
-            min="1"
-            value={idMesa}
-            onChange={(e) => setIdMesa(e.target.value || '1')}
-            className="w-20 rounded-full border border-stone bg-paper px-3 py-1.5 text-center outline-none focus:border-mustard-400"
-          />
+          <span className="flex items-center gap-1.5">
+            <button
+              type="button"
+              disabled={Number(idMesa) <= 1}
+              onClick={() => cambiarMesaEnUno(-1)}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-stone text-ink/70 transition-colors hover:border-mustard-400 hover:text-mustard-600 disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Ir a la mesa anterior"
+            >
+              <Minus className="h-4 w-4" />
+            </button>
+            <input
+              type="number"
+              min="1"
+              value={idMesa}
+              onChange={(e) => setIdMesa(e.target.value)}
+              className="w-16 rounded-full border border-stone bg-paper px-3 py-1.5 text-center outline-none focus:border-mustard-400"
+            />
+            <button
+              type="button"
+              onClick={() => cambiarMesaEnUno(1)}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-stone text-ink/70 transition-colors hover:border-mustard-400 hover:text-mustard-600"
+              aria-label="Ir a la mesa siguiente"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </span>
         </label>
         <p className="text-xs text-ink/50">
           Tu seleccion se guarda automaticamente en esta mesa, sin limite de unidades por platillo.

@@ -1,11 +1,20 @@
+import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { Minus, Plus, RotateCcw, AlertTriangle } from 'lucide-react'
 import Loading from '../components/Loading.jsx'
 import { useMesa } from '../hooks/useMesa.js'
+import { useMesaActiva } from '../hooks/useMesaActiva.jsx'
 
 export default function Mesa() {
   const { idMesa } = useParams()
   const { mesa, cargando, cambiarCantidad, limpiarMesa } = useMesa(idMesa)
+  const { setIdMesa } = useMesaActiva()
+
+  // Si se entra directo a /mesa/:idMesa (p. ej. desde un QR), esa pasa a ser
+  // la mesa activa para el resto de la app (Carta, Navbar).
+  useEffect(() => {
+    setIdMesa(idMesa)
+  }, [idMesa])
 
   if (cargando) {
     return <Loading etiqueta="Cargando tu cuenta..." />

@@ -1,12 +1,14 @@
 import { NavLink } from 'react-router-dom'
 import { UtensilsCrossed, LogOut } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth.jsx'
+import { useMesaActiva } from '../hooks/useMesaActiva.jsx'
 
 const linkBase =
   'px-3 py-2 text-sm font-medium rounded-full transition-colors'
 
 export default function Navbar() {
   const { autenticado, esAdmin, usuario, cerrarSesion } = useAuth()
+  const { idMesa } = useMesaActiva()
 
   return (
     <header className="sticky top-0 z-20 border-b border-stone bg-paper/90 backdrop-blur">
@@ -27,7 +29,7 @@ export default function Navbar() {
             Carta
           </NavLink>
           <NavLink
-            to="/mesa/1"
+            to={`/mesa/${idMesa}`}
             className={({ isActive }) =>
               `${linkBase} ${isActive ? 'bg-mustard-50 text-mustard-600' : 'text-ink/70 hover:bg-stone-light'}`
             }
